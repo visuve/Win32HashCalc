@@ -27,4 +27,9 @@ public:
 		Assert::AreEqual(L"c0df5e67ee6a34d2cee9f6c80d45c8e136ff363404027db863cc301acd4bf01aedfe8ea408dc3654bab4689db94f4585", HashCalc(BCRYPT_SHA384_ALGORITHM).CalculateChecksum(std::wstring(L"carbon")).c_str());
 		Assert::AreEqual(L"44e75d435bf4e8c41552a61bc9df08baede971a4470ec79e99408f8a4644e393dc56f7d7a1001a075e763e8773a368ed5a960323f3ff050d0e7f1d4cd237549c", HashCalc(BCRYPT_SHA512_ALGORITHM).CalculateChecksum(std::wstring(L"nitrogen")).c_str());
 	}
+
+	TEST_METHOD(FileChecksum)
+	{
+		Assert::AreEqual(L"eaf14f69a2a91ff917cca93b76ac22cdb0fbbfed576b7df3db67c5dc2c26c618819941b2792704285bdf1e68ece8be54d4a5d7c06eb6137d3b1fb55b1a818a7c", HashCalc(BCRYPT_SHA512_ALGORITHM).CalculateChecksum(std::filesystem::path(L"..\\..\\..\\HashCalc.props")).c_str());
+	}
 };
