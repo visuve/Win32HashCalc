@@ -250,21 +250,84 @@ bool IsReadableFile(const std::wstring& value)
 	return false;
 }
 
+const std::array<std::wstring, 7> SupportedAlgorithms =
+{
+	BCRYPT_MD2_ALGORITHM,
+	BCRYPT_MD4_ALGORITHM,
+	BCRYPT_MD5_ALGORITHM,
+	BCRYPT_SHA1_ALGORITHM,
+	BCRYPT_SHA256_ALGORITHM,
+	BCRYPT_SHA384_ALGORITHM,
+	BCRYPT_SHA512_ALGORITHM
+};
+
+template<typename T>
+std::wstring Join(const T& array)
+{
+	std::wstring joined;	
+	
+	for (size_t i = 0; i < array.size(); ++i)
+	{ 
+		if (i < array.size() - 2)
+		{
+			joined += array[i] + L", ";
+			continue;
+		}
+
+		if (i < array.size() - 1)
+		{
+			joined += array[i] + L" & ";
+			continue;
+		}
+
+		joined += array[i];
+	}
+
+	return joined;
+}
+
+bool IsSupportedAlgorithm(const std::wstring& algorithm)
+{
+	return std::find(SupportedAlgorithms.cbegin(), SupportedAlgorithms.cend(), algorithm) != SupportedAlgorithms.cend();
+}
+
+void PrintUsage(const std::filesystem::path& exePath)
+{
+	std::wcerr << L"HashCalc v0.1" << std::endl;
+	std::wcerr << L"Invalid arguments. Usage:" << std::endl;
+	std::wcerr << exePath << " <string>" << std::endl;
+	std::wcerr << exePath << " X:\\Path\\To\\File" << std::endl;
+	std::wcerr << exePath << " <string> <algorithm>" << std::endl;
+	std::wcerr << exePath << " X:\\Path\\To\\File <algorithm>" << std::endl;
+	std::wcerr << L"Currently supported algorithms: " << Join(SupportedAlgorithms) << std::endl;
+}
+
 int wmain(int argc, wchar_t* argv[])
 {
-	if (argc == 1)
+	if (argc == 1 || argc > 3)
 	{
-		std::wcerr << L"HashCalc v0.1" << std::endl;
-		std::wcerr << L"Usage:" << std::endl;
-		std::wcerr << argv[0] << " <string>" << std::endl;
-		std::wcerr << argv[0] << " X:\\Path\\To\\File" << std::endl;
-
+		PrintUsage(argv[0]);
 		return ERROR_BAD_ARGUMENTS;
+	}
+
+	std::wstring selectedAlgorithm = BCRYPT_SHA256_ALGORITHM;
+
+	if (argc == 3)
+	{
+		if (IsSupportedAlgorithm(argv[2]))
+		{
+			selectedAlgorithm = argv[2];
+		}
+		else
+		{
+			PrintUsage(argv[0]);
+			return ERROR_BAD_ARGUMENTS;
+		}
 	}
 
 	try
 	{
-		HashCalc hashCalc(BCRYPT_SHA256_ALGORITHM);
+		HashCalc hashCalc(selectedAlgorithm);
 
 		if (IsReadableFile(argv[1]))
 		{
