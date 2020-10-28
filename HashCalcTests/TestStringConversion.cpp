@@ -19,6 +19,7 @@ public:
 	TEST_METHOD(Join)
 	{
 		std::vector<std::wstring> elements = { L"hydrogen", L"helium", L"lithium", L"beryllium" };
-		Assert::AreEqual(StringConversion::Join(elements).c_str(), L"hydrogen, helium, lithium & beryllium");
+		Assert::AreEqual(
+			StringConversion::Join(elements).c_str(), L"hydrogen, helium, lithium & beryllium");
 	}
 };

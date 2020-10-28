@@ -7,12 +7,29 @@ namespace StringConversion
 	{
 		std::string utf8;
 
-		int required = WideCharToMultiByte(CP_UTF8, 0, unicode.c_str(), static_cast<int>(unicode.length()), nullptr, 0, nullptr, nullptr);
+		int required = WideCharToMultiByte(
+			CP_UTF8,
+			0,
+			unicode.c_str(),
+			static_cast<int>(unicode.length()),
+			nullptr,
+			0,
+			nullptr,
+			nullptr);
 
 		if (required > 0)
 		{
 			utf8.resize(static_cast<size_t>(required));
-			required = WideCharToMultiByte(CP_UTF8, 0, unicode.c_str(), static_cast<int>(unicode.length()), utf8.data(), required, nullptr, nullptr);
+
+			required = WideCharToMultiByte(
+				CP_UTF8,
+				0,
+				unicode.c_str(),
+				static_cast<int>(unicode.length()),
+				utf8.data(),
+				required,
+				nullptr,
+				nullptr);
 		}
 
 		return utf8;

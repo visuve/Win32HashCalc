@@ -11,7 +11,7 @@ HashCalcException::HashCalcException(const std::wstring& what, const NTSTATUS st
 std::string HashCalcException::Format(const std::wstring& what, const NTSTATUS status)
 {
 	std::array<wchar_t, 0x400> buffer;
-	DWORD size = FormatMessageW(
+	const DWORD size = FormatMessageW(
 		FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_FROM_SYSTEM,
 		GetModuleHandle(L"ntdll"),
 		status,

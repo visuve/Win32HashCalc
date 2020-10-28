@@ -47,7 +47,10 @@ const std::array<std::wstring, 7> SupportedAlgorithms =
 
 bool IsSupportedAlgorithm(const std::wstring& algorithm)
 {
-	return std::find(SupportedAlgorithms.cbegin(), SupportedAlgorithms.cend(), algorithm) != SupportedAlgorithms.cend();
+	return std::find(
+		SupportedAlgorithms.cbegin(),
+		SupportedAlgorithms.cend(),
+		algorithm) != SupportedAlgorithms.cend();
 }
 
 void PrintUsage(const std::filesystem::path& exePath)
@@ -58,7 +61,8 @@ void PrintUsage(const std::filesystem::path& exePath)
 	std::wcerr << exePath << " X:\\Path\\To\\File" << std::endl;
 	std::wcerr << exePath << " <string> <algorithm>" << std::endl;
 	std::wcerr << exePath << " X:\\Path\\To\\File <algorithm>" << std::endl;
-	std::wcerr << L"Currently supported algorithms: " << StringConversion::Join(SupportedAlgorithms) << std::endl;
+	std::wcerr << L"Currently supported algorithms: " <<
+		StringConversion::Join(SupportedAlgorithms) << std::endl;
 }
 
 int wmain(int argc, wchar_t* argv[])

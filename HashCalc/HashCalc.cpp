@@ -7,11 +7,19 @@ size_t HashCalc::GetPropSize(const std::wstring& property)
 {
 	DWORD object = 0;
 	DWORD bytesWritten = 0;
-	const NTSTATUS status = BCryptGetProperty(_algorithmHandle, property.c_str(), reinterpret_cast<PUCHAR>(&object), sizeof(DWORD), &bytesWritten, 0);
+
+	const NTSTATUS status = BCryptGetProperty(
+		_algorithmHandle,
+		property.c_str(),
+		reinterpret_cast<PUCHAR>(&object),
+		sizeof(DWORD),
+		&bytesWritten,
+		0);
 
 	if (status != 0 || object == 0 || bytesWritten != sizeof(DWORD))
 	{
-		const std::string message = "BCryptGetProperty(" + StringConversion::ToUtf8(property) + ')';
+		const std::string message = 
+			"BCryptGetProperty(" + StringConversion::ToUtf8(property) + ')';
 		throw std::exception(message.c_str(), status);
 	}
 
@@ -22,7 +30,11 @@ HashCalc::HashCalc(const std::wstring& algorithmName)
 {
 	// Create provider
 	{
-		NTSTATUS status = BCryptOpenAlgorithmProvider(&_algorithmHandle, algorithmName.c_str(), nullptr, 0);
+		const NTSTATUS status = BCryptOpenAlgorithmProvider(
+			&_algorithmHandle,
+			algorithmName.c_str(),
+			nullptr,
+			0);
 
 		if (status != 0)
 		{
@@ -34,7 +46,14 @@ HashCalc::HashCalc(const std::wstring& algorithmName)
 	{
 		_hashObject.resize(GetPropSize(BCRYPT_OBJECT_LENGTH));
 
-		NTSTATUS status = BCryptCreateHash(_algorithmHandle, &_hashHandle, _hashObject.data(), static_cast<ULONG>(_hashObject.size()), nullptr, 0, 0);
+		const NTSTATUS status = BCryptCreateHash(
+			_algorithmHandle,
+			&_hashHandle,
+			_hashObject.data(),
+			static_cast<ULONG>(_hashObject.size()),
+			nullptr,
+			0,
+			0);
 
 		if (status != 0)
 		{
@@ -119,7 +138,11 @@ void HashCalc::Update(std::vector<uint8_t>& data)
 		return;
 	}
 
-	NTSTATUS status = BCryptHashData(_hashHandle, data.data(), static_cast<ULONG>(data.size()), 0);
+	const NTSTATUS status = BCryptHashData(
+		_hashHandle,
+		data.data(),
+		static_cast<ULONG>(data.size()),
+		0);
 
 	if (status != 0)
 	{
@@ -134,7 +157,11 @@ void HashCalc::Finish()
 		return;
 	}
 
-	NTSTATUS status = BCryptFinishHash(_hashHandle, _hashData.data(), static_cast<ULONG>(_hashData.size()), 0);
+	const NTSTATUS status = BCryptFinishHash(
+		_hashHandle,
+		_hashData.data(),
+		static_cast<ULONG>(_hashData.size()),
+		0);
 
 	if (status != 0)
 	{
@@ -149,7 +176,7 @@ std::wstring HashCalc::HashString()
 
 	for (int x : _hashData)
 	{
-		ss << std::setw(2)  << x;
+		ss << std::setw(2) << x;
 	}
 
 	return ss.str();
