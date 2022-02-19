@@ -9,12 +9,12 @@ public:
 	HashCalc(std::wstring_view algorithmName);
 	~HashCalc();
 
-	std::wstring CalculateChecksum(std::vector<uint8_t>& data);
-	std::wstring CalculateChecksumFrom(const std::filesystem::path& path);
+	std::wstring CalculateChecksum(std::span<uint8_t> data);
 	std::wstring CalculateChecksum(std::wstring_view data);
+	std::wstring CalculateChecksumFrom(const std::filesystem::path& path);
 
 private:
-	void Update(std::vector<uint8_t>& data);
+	void Update(std::span<uint8_t> data);
 	void Finish();
 	std::wstring HashString();
 

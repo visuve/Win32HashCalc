@@ -80,7 +80,7 @@ HashCalc::~HashCalc()
 	}
 }
 
-std::wstring HashCalc::CalculateChecksum(std::vector<uint8_t>& data)
+std::wstring HashCalc::CalculateChecksum(std::span<uint8_t> data)
 {
 	if (_algorithmHandle == nullptr || _hashHandle == nullptr)
 	{
@@ -91,6 +91,12 @@ std::wstring HashCalc::CalculateChecksum(std::vector<uint8_t>& data)
 	Finish();
 
 	return HashString();
+}
+
+std::wstring HashCalc::CalculateChecksum(std::wstring_view data)
+{
+	std::vector<uint8_t> ba = StringConversion::ToUtf8ByteArray(data);
+	return CalculateChecksum(ba);
 }
 
 std::wstring HashCalc::CalculateChecksumFrom(const std::filesystem::path& path)
@@ -125,13 +131,7 @@ std::wstring HashCalc::CalculateChecksumFrom(const std::filesystem::path& path)
 	return HashString();
 }
 
-std::wstring HashCalc::CalculateChecksum(std::wstring_view data)
-{
-	std::vector<uint8_t> ba = StringConversion::ToUtf8ByteArray(data);
-	return CalculateChecksum(ba);
-}
-
-void HashCalc::Update(std::vector<uint8_t>& data)
+void HashCalc::Update(std::span<uint8_t> data)
 {
 	if (_algorithmHandle == nullptr || _hashHandle == nullptr)
 	{
@@ -141,7 +141,7 @@ void HashCalc::Update(std::vector<uint8_t>& data)
 	const NTSTATUS status = BCryptHashData(
 		_hashHandle,
 		data.data(),
-		static_cast<ULONG>(data.size()),
+		static_cast<ULONG>(data.size_bytes()),
 		0);
 
 	if (status != 0)
