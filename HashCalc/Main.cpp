@@ -94,7 +94,7 @@ int wmain(int argc, wchar_t* argv[])
 
 		if (IsReadableFile(argv[1]))
 		{
-			std::wcout << hashCalc.CalculateChecksum(std::filesystem::path(argv[1]));
+			std::wcout << hashCalc.CalculateChecksumFrom(std::filesystem::path(argv[1]));
 		}
 		else
 		{

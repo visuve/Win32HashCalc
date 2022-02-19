@@ -3,14 +3,14 @@
 #include "HashCalcException.hpp"
 #include "StringConversion.hpp"
 
-size_t HashCalc::GetPropSize(const std::wstring& property)
+size_t HashCalc::GetPropSize(std::wstring_view property)
 {
 	DWORD object = 0;
 	DWORD bytesWritten = 0;
 
 	const NTSTATUS status = BCryptGetProperty(
 		_algorithmHandle,
-		property.c_str(),
+		property.data(),
 		reinterpret_cast<PUCHAR>(&object),
 		sizeof(DWORD),
 		&bytesWritten,
@@ -26,13 +26,13 @@ size_t HashCalc::GetPropSize(const std::wstring& property)
 	return object;
 }
 
-HashCalc::HashCalc(const std::wstring& algorithmName)
+HashCalc::HashCalc(std::wstring_view algorithmName)
 {
 	// Create provider
 	{
 		const NTSTATUS status = BCryptOpenAlgorithmProvider(
 			&_algorithmHandle,
-			algorithmName.c_str(),
+			algorithmName.data(),
 			nullptr,
 			0);
 
@@ -93,7 +93,7 @@ std::wstring HashCalc::CalculateChecksum(std::vector<uint8_t>& data)
 	return HashString();
 }
 
-std::wstring HashCalc::CalculateChecksum(const std::filesystem::path& path)
+std::wstring HashCalc::CalculateChecksumFrom(const std::filesystem::path& path)
 {
 	std::basic_ifstream<uint8_t> file(path, std::ios::in | std::ios::binary);
 
@@ -125,7 +125,7 @@ std::wstring HashCalc::CalculateChecksum(const std::filesystem::path& path)
 	return HashString();
 }
 
-std::wstring HashCalc::CalculateChecksum(const std::wstring& data)
+std::wstring HashCalc::CalculateChecksum(std::wstring_view data)
 {
 	std::vector<uint8_t> ba = StringConversion::ToUtf8ByteArray(data);
 	return CalculateChecksum(ba);

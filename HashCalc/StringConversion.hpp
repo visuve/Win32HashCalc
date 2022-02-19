@@ -2,8 +2,8 @@
 
 namespace StringConversion
 {
-	std::string ToUtf8(const std::wstring& unicode);
-	std::vector<uint8_t> ToUtf8ByteArray(const std::wstring& unicode);
+	std::string ToUtf8(std::wstring_view unicode);
+	std::vector<uint8_t> ToUtf8ByteArray(std::wstring_view unicode);
 
 	template<typename T, typename C>
 	std::basic_string<C> Join(

@@ -3,15 +3,15 @@
 class HashCalc
 {
 private:
-	size_t GetPropSize(const std::wstring& property);
+	size_t GetPropSize(std::wstring_view property);
 
 public:
-	HashCalc(const std::wstring& algorithmName);
+	HashCalc(std::wstring_view algorithmName);
 	~HashCalc();
 
 	std::wstring CalculateChecksum(std::vector<uint8_t>& data);
-	std::wstring CalculateChecksum(const std::filesystem::path& path);
-	std::wstring CalculateChecksum(const std::wstring& data);
+	std::wstring CalculateChecksumFrom(const std::filesystem::path& path);
+	std::wstring CalculateChecksum(std::wstring_view data);
 
 private:
 	void Update(std::vector<uint8_t>& data);

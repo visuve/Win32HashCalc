@@ -3,14 +3,14 @@
 
 namespace StringConversion
 {
-	std::string ToUtf8(const std::wstring& unicode)
+	std::string ToUtf8(std::wstring_view unicode)
 	{
 		std::string utf8;
 
 		int required = WideCharToMultiByte(
 			CP_UTF8,
 			0,
-			unicode.c_str(),
+			unicode.data(),
 			static_cast<int>(unicode.length()),
 			nullptr,
 			0,
@@ -24,7 +24,7 @@ namespace StringConversion
 			required = WideCharToMultiByte(
 				CP_UTF8,
 				0,
-				unicode.c_str(),
+				unicode.data(),
 				static_cast<int>(unicode.length()),
 				utf8.data(),
 				required,
@@ -35,7 +35,7 @@ namespace StringConversion
 		return utf8;
 	}
 
-	std::vector<uint8_t> ToUtf8ByteArray(const std::wstring& unicode)
+	std::vector<uint8_t> ToUtf8ByteArray(std::wstring_view unicode)
 	{
 		const std::string utf8 = ToUtf8(unicode);
 		return { utf8.cbegin(), utf8.cend() };

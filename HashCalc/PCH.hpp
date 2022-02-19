@@ -9,4 +9,5 @@
 #include <filesystem>
 #include <array>
 #include <sstream>
+#include <string_view>
 #include <fstream>
