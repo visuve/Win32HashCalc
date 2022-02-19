@@ -16,4 +16,5 @@ jobs:
 
     - name: Test
       run: |
+        vstest.console.exe out/x86d/bin/HashCalcTests.dll
         vstest.console.exe out/x64d/bin/HashCalcTests.dll
