@@ -1,14 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28729.10
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BA33CAF0-D18B-4F28-B943-BE34C2CBB594}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
+		.github\workflows\cppcheck.yml = .github\workflows\cppcheck.yml
 		HashCalc.props = HashCalc.props
+		.github\workflows\msvc.yml = .github\workflows\msvc.yml
 		ReadMe.md = ReadMe.md
 	EndProjectSection
 EndProject

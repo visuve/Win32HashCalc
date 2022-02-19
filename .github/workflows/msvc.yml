@@ -1,4 +1,4 @@
-name: Build
+name: Build and Test
 
 on: [push, pull_request]
 
@@ -8,5 +8,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: microsoft/setup-msbuild@v1.0.3
-    - run: |
+    - uses: darenm/Setup-VSTest@v1
+
+    - name: Compile
+      run: |
         msbuild Win32HashCalc.sln /m
+
+    - name: Test
+      run: |
+        vstest.console.exe out/x64d/bin/HashCalcTests.dll
