@@ -113,11 +113,13 @@ std::wstring HashCalc::CalculateChecksumFrom(const std::filesystem::path& path)
 	std::vector<uint8_t> buffer(0x400);
 	uint64_t bytesLeft = std::filesystem::file_size(path);
 
+	assert(bytesLeft <= std::numeric_limits<size_t>::max());
+
 	while (bytesLeft && file)
 	{
 		if (buffer.size() > bytesLeft)
 		{
-			buffer.resize(bytesLeft);
+			buffer.resize(static_cast<size_t>(bytesLeft));
 		}
 
 		file.read(buffer.data(), buffer.size());
