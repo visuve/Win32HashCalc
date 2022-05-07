@@ -44,13 +44,11 @@ HashCalc::HashCalc(std::wstring_view algorithmName)
 
 	// Create hash object
 	{
-		_hashObject.resize(GetPropSize(BCRYPT_OBJECT_LENGTH));
-
 		const NTSTATUS status = BCryptCreateHash(
 			_algorithmHandle,
 			&_hashHandle,
-			_hashObject.data(),
-			static_cast<ULONG>(_hashObject.size()),
+			nullptr,
+			0,
 			nullptr,
 			0,
 			0);
@@ -176,9 +174,9 @@ std::wstring HashCalc::HashString()
 	std::wstringstream ss;
 	ss << std::hex << std::setfill(L'0');
 
-	for (int x : _hashData)
+	for (uint8_t x : _hashData)
 	{
-		ss << std::setw(2) << x;
+		ss << std::setw(2) << +x;
 	}
 
 	return ss.str();
