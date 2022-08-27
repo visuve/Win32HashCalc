@@ -38,6 +38,13 @@ namespace StringConversion
 	std::vector<uint8_t> ToUtf8ByteArray(std::wstring_view unicode)
 	{
 		const std::string utf8 = ToUtf8(unicode);
-		return { utf8.cbegin(), utf8.cend() };
+		std::vector<uint8_t> bytes(utf8.size());
+
+		std::ranges::transform(utf8, bytes.begin(), [](char c)
+		{ 
+			return static_cast<uint8_t>(c); 
+		});
+
+		return bytes;
 	}
 }

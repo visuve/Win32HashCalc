@@ -22,4 +22,14 @@ public:
 		Assert::AreEqual(
 			StringConversion::Join(elements).c_str(), L"hydrogen, helium, lithium & beryllium");
 	}
+
+	TEST_METHOD(Bytes)
+	{
+		auto result = StringConversion::ToUtf8ByteArray(L"\xD83D\xDE18");
+		Assert::AreEqual(result.size(), size_t(4));
+		Assert::AreEqual(result[0], uint8_t(0xF0));
+		Assert::AreEqual(result[1], uint8_t(0x9F));
+		Assert::AreEqual(result[2], uint8_t(0x98));
+		Assert::AreEqual(result[3], uint8_t(0x98));
+	}
 };
