@@ -30,6 +30,8 @@ namespace StringConversion
 				required,
 				nullptr,
 				nullptr);
+
+			_ASSERT(utf8.size() == static_cast<size_t>(required));
 		}
 
 		return utf8;
