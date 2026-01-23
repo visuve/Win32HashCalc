@@ -3,7 +3,7 @@
 #include "HashCalcException.hpp"
 #include "StringConversion.hpp"
 
-bool IsReadableFile(const std::wstring& value)
+bool IsReadableFile(std::wstring_view value)
 {
 	try
 	{
@@ -45,7 +45,7 @@ const std::array<std::wstring, 7> SupportedAlgorithms =
 	BCRYPT_SHA512_ALGORITHM
 };
 
-bool IsSupportedAlgorithm(const std::wstring& algorithm)
+bool IsSupportedAlgorithm(std::wstring_view algorithm)
 {
 	return std::find(
 		SupportedAlgorithms.cbegin(),

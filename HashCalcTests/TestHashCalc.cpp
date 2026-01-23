@@ -32,8 +32,8 @@ public:
 	{
 		const std::filesystem::path path(L"..\\..\\..\\HashCalc.props");
 
-		Assert::AreEqual(L"b01f12388e0451515afc471716d4317ce3ef5e9931aecb82a6ed2d237e25945d", HashCalc(BCRYPT_SHA256_ALGORITHM).CalculateChecksumFrom(path).c_str());
-		Assert::AreEqual(L"2772e73aa607a4590919b62c94cf61b1967b8fb5", HashCalc(BCRYPT_SHA1_ALGORITHM).CalculateChecksumFrom(path).c_str());
-		Assert::AreEqual(L"b840c75c5a9b5850a9de1b4b4de6670a061dfa9277d3183967494851a5ff4d15620ec23f5ca912688665e5a2e8e300258ccdda6fff9d1fa832ecab52d1b36de9", HashCalc(BCRYPT_SHA512_ALGORITHM).CalculateChecksumFrom(path).c_str());
+		Assert::AreEqual(L"603dded90b3ab5d679ac25c36c8eb9ea01d2fa4bac6ad2d06de7416c916ae169", HashCalc(BCRYPT_SHA256_ALGORITHM).CalculateChecksumFrom(path).c_str());
+		Assert::AreEqual(L"29a7bcd3f8044aa420afcde4c2b4ba29cb41fd11", HashCalc(BCRYPT_SHA1_ALGORITHM).CalculateChecksumFrom(path).c_str());
+		Assert::AreEqual(L"0bd3ae329d0c9841526f9cc57bbdfcc27664fb1377d1955d4d815eec1df88ab929e58f42ffcb3ba8cf3cfacd3b74ef04ac3af60a09211efb081c228c2b9ec0c3", HashCalc(BCRYPT_SHA512_ALGORITHM).CalculateChecksumFrom(path).c_str());
 	}
 };
