@@ -169,15 +169,24 @@ void HashCalc::Finish()
 	}
 }
 
-std::wstring HashCalc::HashString()
+std::wstring HashCalc::HashString() const
 {
-	std::wstringstream ss;
-	ss << std::hex << std::setfill(L'0');
+	static constexpr wchar_t HexMap[] = L"0123456789abcdef";
 
-	for (uint8_t x : _hashData)
+	if (_hashData.empty())
 	{
-		ss << std::setw(2) << +x;
+		throw HashCalcException(L"Hash data is empty", STATUS_INVALID_PARAMETER);
 	}
 
-	return ss.str();
+	std::wstring result(_hashData.size() * 2, L'\0');
+
+	auto it = result.begin();
+
+	for (uint8_t byte : _hashData)
+	{
+		*it++ = HexMap[byte >> 4];
+		*it++ = HexMap[byte & 0xF];
+	}
+
+	return result;
 }

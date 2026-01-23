@@ -16,7 +16,7 @@ public:
 private:
 	void Update(std::span<uint8_t> data);
 	void Finish();
-	std::wstring HashString();
+	std::wstring HashString() const;
 
 	BCRYPT_ALG_HANDLE _algorithmHandle = nullptr;
 	BCRYPT_HASH_HANDLE _hashHandle = nullptr;
