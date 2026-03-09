@@ -7,27 +7,27 @@ namespace StringConversion
 
 	template<typename T, typename C>
 	std::basic_string<C> Join(
-		const T& array, 
-		const std::basic_string<C>& separator, 
-		const std::basic_string<C>& lastSeparator)
+		const T& array,
+		std::basic_string_view<C> separator,
+		std::basic_string_view<C> lastSeparator)
 	{
 		std::basic_string<C> joined;
 
 		for (size_t i = 0; i < array.size(); ++i)
 		{
-			if (i < array.size() - 2)
-			{
-				joined += array[i] + separator;
-				continue;
-			}
-
-			if (i < array.size() - 1)
-			{
-				joined += array[i] + lastSeparator;
-				continue;
-			}
-
 			joined += array[i];
+
+			if (i + 2 < array.size())
+			{
+				joined += separator;
+				continue;
+			}
+
+			if (i + 1 < array.size())
+			{
+				joined += lastSeparator;
+				continue;
+			}
 		}
 
 		return joined;
