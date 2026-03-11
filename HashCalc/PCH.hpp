@@ -6,10 +6,11 @@
 #include <Windows.h>
 #include <bcrypt.h>
 
-#include <cassert>
-#include <iostream>
-#include <filesystem>
 #include <array>
+#include <cassert>
+#include <filesystem>
+#include <iostream>
+#include <map>
 #include <span>
 #include <sstream>
 #include <string_view>

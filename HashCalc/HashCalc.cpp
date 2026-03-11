@@ -97,7 +97,7 @@ std::wstring HashCalc::CalculateChecksum(std::wstring_view data)
 	return CalculateChecksum(ba);
 }
 
-std::wstring HashCalc::CalculateChecksumFrom(const std::filesystem::path& path)
+std::wstring HashCalc::CalculateChecksumFromFile(const std::filesystem::path& path)
 {
 	std::basic_ifstream<uint8_t> file(path, std::ios::in | std::ios::binary);
 
@@ -129,6 +129,24 @@ std::wstring HashCalc::CalculateChecksumFrom(const std::filesystem::path& path)
 	Finish();
 
 	return HashString();
+}
+
+// NOTE: THIS FUNCTION WILL NOW CRASH BECAUSE THE HASH HANDLE IS NOT REUSABLE.
+std::map<std::filesystem::path, std::wstring> HashCalc::CalculateChecksumFromFolder(const std::filesystem::path& path)
+{
+	std::map<std::filesystem::path, std::wstring> result;
+
+	const std::filesystem::directory_options options = std::filesystem::directory_options::skip_permission_denied;
+
+	for (const std::filesystem::directory_entry& entry : std::filesystem::recursive_directory_iterator(path, options))
+	{
+		if (entry.is_regular_file())
+		{
+			result.emplace(entry.path(), CalculateChecksumFromFile(entry.path()));
+		}
+	}
+
+	return result;
 }
 
 void HashCalc::Update(std::span<uint8_t> data)

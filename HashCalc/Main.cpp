@@ -3,35 +3,41 @@
 #include "HashCalcException.hpp"
 #include "StringConversion.hpp"
 
-bool IsReadableFile(std::wstring_view value)
+bool CheckPath(const std::filesystem::path& path, std::filesystem::file_type expected)
 {
 	try
 	{
-		const std::filesystem::path path(value);
 		const std::filesystem::file_status status = std::filesystem::status(path);
 
-		if (status.type() != std::filesystem::file_type::regular)
+		if (status.type() != expected)
 		{
 			return false;
 		}
 
-		const std::filesystem::perms perms = status.permissions();
+		const std::filesystem::perms permissions = status.permissions();
+		
+		const std::filesystem::perms expected = 
+			std::filesystem::perms::owner_read |
+			std::filesystem::perms::group_read |
+			std::filesystem::perms::others_read;
 
-		if ((perms & std::filesystem::perms::owner_read) == std::filesystem::perms::none ||
-			(perms & std::filesystem::perms::group_read) == std::filesystem::perms::none ||
-			(perms & std::filesystem::perms::others_read) == std::filesystem::perms::none)
-		{
-			return false;
-		}
-
-		return true;
+		return (permissions & expected) != std::filesystem::perms::none;
 	}
 	catch (const std::exception& e)
 	{
-		std::cerr << e.what() << std::endl;
+		std::cerr << e.what() << '\n';
+		return false;
 	}
+}
 
-	return false;
+bool IsReadableFile(const std::filesystem::path& path)
+{
+	return CheckPath(path, std::filesystem::file_type::regular);
+}
+
+bool IsReadableFolder(const std::filesystem::path& path)
+{
+	return CheckPath(path, std::filesystem::file_type::directory);
 }
 
 const std::array<std::wstring, 7> SupportedAlgorithms =
@@ -94,7 +100,14 @@ int wmain(int argc, wchar_t* argv[])
 
 		if (IsReadableFile(argv[1]))
 		{
-			std::wcout << hashCalc.CalculateChecksumFrom(std::filesystem::path(argv[1]));
+			std::wcout << hashCalc.CalculateChecksumFromFile(std::filesystem::path(argv[1]));
+		}
+		else if (IsReadableFolder(argv[1]))
+		{
+			for (const auto& [path, hash] : hashCalc.CalculateChecksumFromFolder(std::filesystem::path(argv[1])))
+			{
+				std::wcout << path << L": " << hash << L'\n';
+			}
 		}
 		else
 		{
