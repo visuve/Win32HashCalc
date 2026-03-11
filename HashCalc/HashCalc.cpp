@@ -3,13 +3,13 @@
 #include "HashCalcException.hpp"
 #include "StringConversion.hpp"
 
-size_t HashCalc::GetPropSize(std::wstring_view property)
+size_t PropertySize(BCRYPT_ALG_HANDLE algorithm, std::wstring_view property)
 {
 	DWORD object = 0;
 	DWORD bytesWritten = 0;
 
 	const NTSTATUS status = BCryptGetProperty(
-		_algorithmHandle,
+		algorithm,
 		property.data(),
 		reinterpret_cast<PUCHAR>(&object),
 		sizeof(DWORD),
@@ -18,7 +18,7 @@ size_t HashCalc::GetPropSize(std::wstring_view property)
 
 	if (status != 0 || object == 0 || bytesWritten != sizeof(DWORD))
 	{
-		const std::string message = 
+		const std::string message =
 			"BCryptGetProperty(" + StringConversion::ToUtf8(property) + ')';
 		throw std::exception(message.c_str(), status);
 	}
@@ -26,27 +26,13 @@ size_t HashCalc::GetPropSize(std::wstring_view property)
 	return object;
 }
 
-HashCalc::HashCalc(std::wstring_view algorithmName)
+Hash::Hash(BCRYPT_ALG_HANDLE algorithm)
 {
-	// Create provider
-	{
-		const NTSTATUS status = BCryptOpenAlgorithmProvider(
-			&_algorithmHandle,
-			algorithmName.data(),
-			nullptr,
-			0);
-
-		if (status != 0)
-		{
-			throw HashCalcException(L"BCryptOpenAlgorithmProvider", status);
-		}
-	}
-
 	// Create hash object
 	{
 		const NTSTATUS status = BCryptCreateHash(
-			_algorithmHandle,
-			&_hashHandle,
+			algorithm,
+			&_handle,
 			nullptr,
 			0,
 			nullptr,
@@ -59,8 +45,93 @@ HashCalc::HashCalc(std::wstring_view algorithmName)
 		}
 	}
 
-	// Prepare hash data
-	_hashData.resize(GetPropSize(BCRYPT_HASH_LENGTH));
+	size_t hashSize = PropertySize(algorithm, BCRYPT_HASH_LENGTH);
+
+	_data.resize(hashSize);
+}
+
+Hash::~Hash()
+{
+	if (_handle)
+	{
+		BCryptDestroyHash(_handle);
+		_handle = nullptr;
+	}
+}
+
+void Hash::Update(std::span<uint8_t> data)
+{
+	if (_handle == nullptr)
+	{
+		return;
+	}
+
+	const NTSTATUS status = BCryptHashData(
+		_handle,
+		data.data(),
+		static_cast<ULONG>(data.size_bytes()),
+		0);
+
+	if (status != 0)
+	{
+		throw HashCalcException(L"BCryptHashData", status);
+	}
+}
+
+void Hash::Finish()
+{
+	if (_handle == nullptr)
+	{
+		return;
+	}
+
+	const NTSTATUS status = BCryptFinishHash(
+		_handle,
+		_data.data(),
+		static_cast<ULONG>(_data.size()),
+		0);
+
+	if (status != 0)
+	{
+		throw HashCalcException(L"BCryptFinishHash", status);
+	}
+}
+
+std::wstring Hash::ToString() const
+{
+	static constexpr wchar_t HexMap[] = L"0123456789abcdef";
+
+	if (_data.empty())
+	{
+		throw HashCalcException(L"Hash data is empty", STATUS_INVALID_PARAMETER);
+	}
+
+	std::wstring result(_data.size() * 2, L'\0');
+
+	auto it = result.begin();
+
+	for (uint8_t byte : _data)
+	{
+		*it++ = HexMap[byte >> 4];
+		*it++ = HexMap[byte & 0xF];
+	}
+
+	return result;
+}
+
+
+HashCalc::HashCalc(std::wstring_view algorithmName)
+{
+	const NTSTATUS status = BCryptOpenAlgorithmProvider(
+		&_algorithmHandle,
+		algorithmName.data(),
+		nullptr,
+		BCRYPT_HASH_REUSABLE_FLAG);
+
+	if (status != 0)
+	{
+		throw HashCalcException(L"BCryptOpenAlgorithmProvider", status);
+	}
 }
 
 HashCalc::~HashCalc()
@@ -70,25 +141,21 @@ HashCalc::~HashCalc()
 		BCryptCloseAlgorithmProvider(_algorithmHandle, 0);
 		_algorithmHandle = nullptr;
 	}
-
-	if (_hashHandle)
-	{
-		BCryptDestroyHash(_hashHandle);
-		_hashHandle = nullptr;
-	}
 }
 
 std::wstring HashCalc::CalculateChecksum(std::span<uint8_t> data)
 {
-	if (_algorithmHandle == nullptr || _hashHandle == nullptr)
+	if (_algorithmHandle == nullptr)
 	{
 		return {};
 	}
 
-	Update(data);
-	Finish();
+	Hash hash(_algorithmHandle);
 
-	return HashString();
+	hash.Update(data);
+	hash.Finish();
+
+	return hash.ToString();
 }
 
 std::wstring HashCalc::CalculateChecksum(std::wstring_view data)
@@ -105,6 +172,8 @@ std::wstring HashCalc::CalculateChecksumFromFile(const std::filesystem::path& pa
 	{
 		return {};
 	}
+
+	Hash hash(_algorithmHandle);
 
 	file.exceptions(std::istream::failbit | std::istream::badbit);
 
@@ -123,15 +192,14 @@ std::wstring HashCalc::CalculateChecksumFromFile(const std::filesystem::path& pa
 		file.read(buffer.data(), buffer.size());
 		bytesLeft -= buffer.size();
 
-		Update(buffer);
+		hash.Update(buffer);
 	}
 
-	Finish();
+	hash.Finish();
 
-	return HashString();
+	return hash.ToString();
 }
 
-// NOTE: THIS FUNCTION WILL NOW CRASH BECAUSE THE HASH HANDLE IS NOT REUSABLE.
 std::map<std::filesystem::path, std::wstring> HashCalc::CalculateChecksumFromFolder(const std::filesystem::path& path)
 {
 	std::map<std::filesystem::path, std::wstring> result;
@@ -140,70 +208,12 @@ std::map<std::filesystem::path, std::wstring> HashCalc::CalculateChecksumFromFol
 
 	for (const std::filesystem::directory_entry& entry : std::filesystem::recursive_directory_iterator(path, options))
 	{
-		if (entry.is_regular_file())
+		if (!entry.is_regular_file())
 		{
-			result.emplace(entry.path(), CalculateChecksumFromFile(entry.path()));
+			continue;
 		}
-	}
 
-	return result;
-}
-
-void HashCalc::Update(std::span<uint8_t> data)
-{
-	if (_algorithmHandle == nullptr || _hashHandle == nullptr)
-	{
-		return;
-	}
-
-	const NTSTATUS status = BCryptHashData(
-		_hashHandle,
-		data.data(),
-		static_cast<ULONG>(data.size_bytes()),
-		0);
-
-	if (status != 0)
-	{
-		throw HashCalcException(L"BCryptHashData", status);
-	}
-}
-
-void HashCalc::Finish()
-{
-	if (_algorithmHandle == nullptr || _hashHandle == nullptr)
-	{
-		return;
-	}
-
-	const NTSTATUS status = BCryptFinishHash(
-		_hashHandle,
-		_hashData.data(),
-		static_cast<ULONG>(_hashData.size()),
-		0);
-
-	if (status != 0)
-	{
-		throw HashCalcException(L"BCryptFinishHash", status);
-	}
-}
-
-std::wstring HashCalc::HashString() const
-{
-	static constexpr wchar_t HexMap[] = L"0123456789abcdef";
-
-	if (_hashData.empty())
-	{
-		throw HashCalcException(L"Hash data is empty", STATUS_INVALID_PARAMETER);
-	}
-
-	std::wstring result(_hashData.size() * 2, L'\0');
-
-	auto it = result.begin();
-
-	for (uint8_t byte : _hashData)
-	{
-		*it++ = HexMap[byte >> 4];
-		*it++ = HexMap[byte & 0xF];
+		result.emplace(entry.path(), CalculateChecksumFromFile(entry.path()));
 	}
 
 	return result;

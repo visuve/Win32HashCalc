@@ -106,7 +106,7 @@ int wmain(int argc, wchar_t* argv[])
 		{
 			for (const auto& [path, hash] : hashCalc.CalculateChecksumFromFolder(std::filesystem::path(argv[1])))
 			{
-				std::wcout << path << L": " << hash << L'\n';
+				std::wcout << path << L":\t" << hash << std::endl;
 			}
 		}
 		else
